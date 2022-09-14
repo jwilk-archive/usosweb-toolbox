@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+# encoding=UTF-8
+
+# Copyright © 2022 Jakub Wilk <jwilk@jwilk.net>
+# SPDX-License-Identifier: MIT
+
+import sys
+
+import lxml.html.html5parser
+
+def xtext(elt):
+    return elt.xpath("normalize-space(string())")
+
+def main():
+    parser = lxml.html.html5parser.HTMLParser(namespaceHTMLElements=False)
+    et = parser.parse(sys.stdin)
+    for elt in et.findall('//h1//span'):
+        print(xtext(elt))
+    for elt in et.findall('//td[@class="strong"]'):
+        th = 'Prowadzący:'
+        if xtext(elt) == th:
+            print(th, xtext(elt.getnext()))
+    print('Studenci:')
+    for tr in et.findall('//table[@class="wrnav"]//tr'):
+        line = []
+        for td in tr.findall('.//td'):
+            line += [xtext(td)]
+        if len(line) == 3:
+            if line[2] == 'aktywny':
+                print('*', line[1], line[0])
+
+if __name__ == '__main__':
+    main()
+
+# vim:ts=4 sts=4 sw=4 et
